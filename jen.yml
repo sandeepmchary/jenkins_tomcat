@@ -4,7 +4,7 @@
   tasks:
   - name: Install java
     package:
-      name: "{{ java_pack }}"
+      name: "{{ pack_name }}"
       state: present
   - name: Envronmental Variables
     lineinfile: 
