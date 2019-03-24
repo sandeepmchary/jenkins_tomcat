@@ -1,0 +1,42 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+  - name: Install java
+    package:
+      name: "{{ java_pack }}"
+      state: present
+  - name: Envronmental Variables
+    lineinfile: 
+      path: /etc/profile
+      backup: yes
+      line: JAVA_HOME=$(readlink -f /usr/bin/java | sed "s:bin/java::")\n
+  - name: download jenkin repo
+    get_url:
+      url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+      dest: /etc/yum.repos.d/jenkins.repo
+    when: ansible_os_family == "RedHat"
+  - name: Download Jenkins repo for ubuntu
+    apt_key:
+      url: https://pkg.jenkins.io/debian-stable/jenkins.io.key
+      state: present
+    when: ansible_os_family == "Debian"
+  - name: Import jenkins key
+    rpm_key:
+      state: present
+      key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    when: ansible_os_family == "Debian"
+  - name: Ensure the repository is configured
+    apt_repository:
+      repo: 'deb https://pkg.jenkins.io/debian-stable binary/'
+      state: present
+    when: ansible_os_family == "RedHat"
+  - name: Ensure Jenkins is installed
+    package:
+      name: jenkins
+      state: present
+  - name: Ensure Jenkins is running
+    service:
+      name: jenkins
+      state: present
+
